@@ -1,0 +1,367 @@
+
+1) ORDBMS
+
+(i)
+create or replace type emp_address as object
+(street varchar2(20), 
+city varchar2(20),					object 'emp_address' declaration
+country varchar2(20));
+/
+
+
+(ii)
+create table person (pid number , pname varchar2(20) , address emp_address);		table 'person' created
+
+
+(iii)
+insert into person values(1, 'Ankush' , emp_address('Hinjewadi' , 'Pune' , 'India'));		data insertion into the table 'person'
+insert into person values(2, 'Anku' , emp_address('Wakad' , 'Pune' , 'India'));
+
+
+(iv)
+select * from person;					check the table data
+
+
+(v)
+select p.address.city from person p where pid=1;                             fetch the data from 'p' table having column 'address' ,field 'city' of pid=1
+
+
+
+(vi)
+update person set address = emp_address('Ajit' , 'Pune city' , 'India') where pid=1;	     update the address of person whose pid is 1		
+
+
+(vii)
+declare
+add emp_address;					
+begin
+add:=emp_address('aaa' , 'bbb' , 'ccc');
+update person set address = add where pid=1;
+end;
+/
+
+
+===================================================================
+
+2) we can add function in the object
+  --------------------------first drop the previous 'person' table...otherwise it will gives the error
+
+create or replace type emp_address as object
+( street varchar2(20), 
+city varchar2(20),					function declaration inside the object specification		
+country varchar2(20),
+member function getCity return varchar2
+);
+
+create type body emp_address as
+member function getCity return varchar2 is		object body
+begin
+return city;
+end;
+end;
+/
+--------------------------------------add the table 'person' here
+
+select p.address.getCity( ) from person p where pid=1;
+
+o/p:
+
+P.ADDRESS.GETCITY()
+---------------------
+Pune
+
+==========================================================================
+
+3) use of VARRAY --------------------- to avoid extra memory uses-----------------COLLECTION
+
+(i)
+create type phone_no as varray(5) of number;
+
+
+(ii)
+create table emp_v (empid number, ename varchar2(20), phone phone_no);
+
+
+(iii)
+insert into emp_v values(1, 'AAA', phone_no(232,45435,5645));
+insert into emp_v values(2, 'BBB', phone_no(1132,115635,3322));
+
+
+(iv)
+select * from emp_v where empid=1;
+
+
+(v)
+declare
+t_phone phone_no;
+
+begin
+select phone into t_phone from emp_v where empid=1;
+for x in 1..t_phone.count
+loop
+dbms_output.put_line('phone no val=' || t_phone(x));
+end loop;
+dbms_output.put_line('first phone no=' ||t_phone(t_phone.first));
+dbms_output.put_line('first phone no=' ||t_phone(t_phone.last));
+dbms_output.put_line('first phone no=' ||t_phone.next(t_phone.first));
+dbms_output.put_line('first phone no=' ||t_phone(t_phone.next(t_phone.first)));
+
+end;
+/
+
+o/p:
+phone no val=232
+phone no val=45435
+phone no val=5645
+first phone no=232
+first phone no=5645
+first phone no=2
+first phone no=45435
+
+===========================================================================
+
+
+ex.
+
+create or replace type abc1 as object (data1 varchar2(20),data2 varchar2(20));
+-------------------------------
+create type phone_no1 as varray(5) of abc1;
+-----------------------------
+create table emp_v1 (empid number,ename varchar2(20), phone phone_no1);
+---------------------------------
+insert into emp_v1 values(1, 'AAA' , phone_no1(abc1 ('aaa' , 'bbb'), abc1('xxx','yyy')));
+insert into emp_v1 values(2, 'AAAccc' , phone_no1(abc1 ('aabb' , 'bbcc'), abc1('sss','ddd')));
+
+--------------------------------------
+
+select * from emp_v1 where empid=1;
+
+------------------------------
+declare
+t_phone phone_no1;
+cursor c1 is select * from emp_v1;
+begin
+for y in c1
+loop
+select phone into t_phone from emp_v1 where empid=y.empid;
+for x in 1..t_phone.count
+loop
+dbms_output.put_line('phone no data1= ' || t_phone(x).data1|| ' data2= ' ||t_phone(x).data2);
+end loop;
+end loop;
+end;
+/
+
+o/p:
+phone no data1= aaa
+data2= bbb
+phone no data1= xxx
+data2= yyy
+phone no data1= aabb
+data2= bbcc
+phone no data1= sss
+data2= ddd
+
+-----------------------------------------
+
+create or replace procedure formodify (p_empid number , p_phone in out phone_no1) as 
+
+var number;
+
+begin
+var:=p_phone.count;
+
+p_phone.extend(1);
+p_phone(var+1) :=abc1('demo', 'demoPL');
+
+update emp_v1 set phone=p_phone where empid=p_empid;
+dbms_output.put_line('done');
+end;
+/
+-----------------------------------------
+
+declare
+t_phone phone_no1;
+begin
+select phone into t_phone from emp_v1 where empid=1;
+formodify(1,t_phone);
+end;
+/
+-------------------------------------
+select * from emp_v1;
+
+     EMPID ENAME
+---------- --------------------
+PHONE(DATA1, DATA2)
+--------------------------------------------------------------------------------
+         1 AAA
+PHONE_NO1(ABC1('aaa', 'bbb'), ABC1('xxx', 'yyy'), ABC1('demo', 'demoPL'))
+
+         2 AAAccc
+PHONE_NO1(ABC1('aabb', 'bbcc'), ABC1('sss', 'ddd'))
+
+
+
+
+
+
+
+=================================================================================================
+
+HOW TO CREATE NESTED TABLE--------
+
+
+create type Vehicle as object ( vid number, vname varchar2(20));
+
+--------------------
+create type vehicle_tab as table of Vehicle;
+--------------------------
+
+create table person_data(pid number, pname varchar2(20), vehicle_details vehicle_tab)
+nested table vehicle_details store as vehicle_details_tab;
+
+----------------------------------------
+
+insert into person_data values(1, 'priti' , vehicle_tab(Vehicle(1, 'alto'), Vehicle(2, 'scooty')));
+insert into person_data values(2, 'riti' , vehicle_tab(Vehicle(11, 'alto_new'), Vehicle(12, 'scooty_new')));
+
+------------------------------------
+
+select * from person_data;
+
+       PID PNAME
+---------- --------------------
+VEHICLE_DETAILS(VID, VNAME)
+------------------------------------------------------------------
+         1 priti
+VEHICLE_TAB(VEHICLE(1, 'alto'), VEHICLE(2, 'scooty'))
+
+----------------------------------------------------------------------
+
+declare
+new_vehicle vehicle_tab;
+begin
+new_vehicle:=vehicle_tab(Vehicle(1, 'firstVehicle') , Vehicle(2, 'secondVehicle'));
+update person_data set vehicle_details=new_vehicle where pid=1;
+dbms_output.put_line('updated');
+end;
+/
+
+------------------------------------------------------------------
+
+SQL> select * from person_data;
+
+       PID PNAME
+---------- --------------------
+VEHICLE_DETAILS(VID, VNAME)
+----------------------------------------------------------------------------
+         1 priti
+VEHICLE_TAB(VEHICLE(1, 'firstVehicle'), VEHICLE(2, 'secondVehicle'))
+
+--------------------------------------------------------------
+
+declare
+L_name person_data.pname%type;
+L_vehicle person_data.vehicle_details%type;
+
+cursor get_data is select pname,vehicle_details from person_data;
+
+begin
+open get_data;
+loop
+fetch get_data into L_name ,  L_vehicle;
+exit when get_data%notfound;
+dbms_output.put_line(' person name= ' ||L_name|| ' and vehicles are');
+
+for x in 1..L_vehicle.count
+loop
+dbms_output.put_line(L_vehicle(x).vname);
+end loop;
+end loop;
+end;
+/
+
+o/p:
+person name= priti and vehicles are
+firstVehicle
+secondVehicle
+
+-------------------------------------------------------------------------------
+
+update the ( select vehicle_details from Person_data where pid=2) 
+set vname='new_vehicle_scooty' where vid=12;
+--------------
+insert into the (select vehicle_details from person_data where pid=2)
+values(vehicle(12,'kinetic'));
+------------------
+delete from the (select vehicle_details from person_data where pid=2)
+where vid=11;
+
+
+=====================================================================================================
+
+
+TRIGGER---------------
+
+create or replace trigger tr_update_sal after update on emp
+for each row
+begin
+dbms_output.put_line('sal is updated from trigger');
+end;
+/
+
+update emp set sal=sal+1000 where empno=7839;            single row will update
+
+update emp set sal=sal+1000;                     all row will update
+o/p:
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+sal is updated from trigger
+----------------------------------------------------------
+
+create or replace trigger tr_update_sal after update or insert or delete on emp
+for each row
+begin
+if inserting then
+dbms_output.put_line('inserting row');
+elsif updating then
+dbms_output.put_line('updating row');
+elsif deleting then
+dbms_output.put_line('deleting row');
+end if;
+end;
+/
+
+update emp set sal=sal+1000;   
+
+insert into emp values(20, 'jack' , 'clerk' , 7788 , '12-jan-83' , 45000 ,0, 10);
+
+---------------------------------------------------------
+
+create table sal_details(empno number,sal number);
+
+create or replace trigger tr_update_sal after update on emp
+for each row
+begin
+
+insert into sal_details values(:old.empno, :new.sal);
+dbms_output.put_line('added in sal details');
+end;
+/
+
+insert into sal_details values(1 , 55555);
+insert into sal_details values(2 , 56595);
+
+
+

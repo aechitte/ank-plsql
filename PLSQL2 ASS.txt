@@ -1,0 +1,219 @@
+
+1) 
+
+declare
+
+v_deptno number:=&num;
+
+cursor c_emp is select * from emp where deptno=v_deptno;
+
+v_emp c_emp%rowtype;
+
+begin
+
+open c_emp;
+
+loop
+
+fetch c_emp into v_emp;
+
+exit when c_emp%notfound;
+
+v_emp.sal:=v_emp.sal*1.10;
+
+dbms_output.put_line('ename=' || v_emp.ename || 'sal= ' || v_emp.sal || 'row count=' || c_emp%rowcount );
+
+end loop; 
+
+close c_emp;
+ 
+end;
+
+/
+
+
+
+===========================================================================================================================================================
+
+2.1)
+
+declare
+
+cursor c_emp is select * from emp;
+v number :=0;
+
+begin
+for v_emp in c_emp
+loop
+
+dbms_output.put_line('name= '|| v_emp.ename || 'salary= ' || v_emp.sal || 'job=  ' || v_emp.job);
+v:=v+1;
+
+exit when v=5;
+end loop;
+end;
+/
+
+2.2)
+
+declare
+
+cursor c_emp is select * from emp;
+v_emp c_emp%rowtype;
+v number :=1;
+
+begin
+open c_emp;
+while(v<6)
+loop
+fetch c_emp into v_emp;
+dbms_output.put_line('name= '|| v_emp.ename || 'salary= ' || v_emp.sal || 'job=  ' || v_emp.job);
+v:=v+1;
+
+end loop;
+close c_emp;
+end;
+/
+
+2.3)
+
+declare
+cursor c_emp is select * from emp;
+v_emp c_emp%rowtype;
+
+begin
+
+open c_emp;
+
+for i in 1..5
+loop
+fetch c_emp into v_emp;
+dbms_output.put_line('name= ' || v_emp.ename || 'salary= ' || v_emp.sal || 'job= ' || v_emp.job);
+end loop;
+close c_emp;
+end;
+/
+
+
+=======================================================================================================================================================
+
+3)
+
+USING FOR LOOP
+
+declare
+v_job varchar2(10) := '&job';
+cursor c_emp is select * from emp where job=v_job;
+
+begin
+for v_emp in c_emp
+loop
+dbms_output.put_line('name= ' || v_emp.ename || 'salary= ' || v_emp.sal || 'job= ' || v_emp.job);
+end loop;
+end;
+/
+
+USING BASIC LOOP
+
+declare
+v_job varchar2(10) := '&job';
+cursor c_emp is select * from emp where job=v_job;
+v_emp emp%rowtype;
+
+begin
+open c_emp;
+loop
+fetch c_emp into v_emp;
+exit when c_emp%notfound;
+dbms_output.put_line('name= ' || v_emp.ename || 'salary= ' || v_emp.sal || 'job= ' || v_emp.job);
+end loop;
+close c_emp;
+end;
+/
+
+
+=========================================================================================================================================================
+
+4)
+
+declare
+
+job_id varchar2(20) := '&job';
+cursor c_emp(p_char varchar2) is select * from emp where job=job_id;
+
+begin
+for v_emp in c_emp(job_id)
+loop
+exit when c_emp%notfound;
+dbms_output.put_line('name=' ||v_emp.ename|| ' salary=' ||v_emp.sal|| ' deptno='||v_emp.deptno);
+
+end loop;
+end;
+/
+
+==========================================================================================================================================================
+
+
+5)
+
+declare
+cursor c_emp is select * from emp for update;
+job varchar2(20);
+deptno number;
+begin
+
+for v_emp in c_emp
+loop
+
+if (job='CLERK' and deptno=10) then
+update emp set sal=sal*1.2 where current of c_emp;
+dbms_output.put_line('name=' ||v_emp.ename|| ' salary=' ||v_emp.sal|| ' deptno='||v_emp.deptno);
+
+elsif(job='MANAGER' and deptno=20) then
+update emp set sal=sal*1.05 where current of c_emp;
+dbms_output.put_line('name=' ||v_emp.ename|| ' salary=' ||v_emp.sal|| ' deptno='||v_emp.deptno);
+
+else
+update emp set sal=sal*1.1 where current of c_emp;
+dbms_output.put_line('name=' ||v_emp.ename|| ' salary=' ||v_emp.sal|| ' deptno='||v_emp.deptno);
+
+end if;
+end loop;
+
+end;
+/
+
+===============================================================================================================================================================
+
+
+6)
+
+declare
+
+cursor c_dept is select deptno,dname from dept;
+cursor c_emp(p_deptno number) is select * from emp where deptno=p_deptno;
+
+begin
+for v_dept in c_dept
+loop
+dbms_output.put_line('deptno='||v_dept.deptno||'   '|| 'deptname=' || v_dept.dname);
+
+for v_emp in c_emp(v_dept.deptno)
+loop
+
+dbms_output.put_line('name=' ||v_emp.ename||'  '|| 'enumber=' ||v_emp.empno||'  '|| 'salary=' ||v_emp.sal||'  '|| 'job=' ||v_emp.job);
+
+end loop;
+end loop;
+
+end;
+/
+
+
+
+
+
+
+
+
+

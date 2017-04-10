@@ -1,0 +1,254 @@
+TO FETCH SINGLE COLUMN DETAILS-----'SAL' COLUMN
+
+declare
+
+v_sal emp.sal%type;
+
+begin
+
+select sal into v_sal from emp where empno=7844;
+
+dbms_output.put_line('val=' || v_sal);
+
+end;
+
+/
+
+
+================================================================
+
+TO FETCH THE DETAILS FROM THE ROW------'ENAME' , 'JOB' COLUMNS------FETCHING MULTIPLE COLUMNS FROM SINGLE ROW
+
+declare
+
+v_emp emp%rowtype;
+
+begin
+
+select * into v_emp from emp where empno=7844;
+
+dbms_output.put_line('ename=' ||v_emp.ename ||'job=' ||v_emp.job);
+
+end;
+
+/
+
+====================================================================
+
+CURSOR CONCEPT---------CURSOR IS USED TO FETCH DETAILS FROM THE MULTIPLE ROWS
+
+declare
+
+cursor c_emp is select * from emp;
+
+v_emp c_emp%rowtype;
+
+begin
+
+open c_emp;
+
+loop
+
+fetch c_emp into v_emp;
+
+exit when c_emp%notfound;
+
+dbms_output.put_line('ename=' || v_emp.ename || 'sal= ' || v_emp.sal || 'row count=' || c_emp%rowcount );
+
+end loop; 
+
+ if c_emp%isopen then
+ 
+ dbms_output.put_line('closing cursor');
+ 
+ close c_emp;
+ 
+ end if;
+
+end;
+
+/
+
+
+====================================================================
+
+
+
+declare
+
+cursor c_emp( p_deptno number) is select * from emp where deptno=p_deptno;
+
+v_emp c_emp%rowtype;
+
+begin
+
+open c_emp(10);
+
+dbms_output.put_line('emp from deptno 10');
+
+loop
+
+fetch c_emp into v_emp;
+
+exit when c_emp%notfound;
+
+dbms_output.put_line('ename=' || v_emp.ename || 'sal= ' || v_emp.sal || 'row count=' || c_emp%rowcount );
+
+end loop; 
+
+if c_emp%isopen then
+
+dbms_output.put_line('closing cursor');
+
+close c_emp;
+
+end if;
+
+open c_emp(20);
+
+dbms_output.put_line('emp from deptno 20');
+
+loop
+
+fetch c_emp into v_emp;
+
+exit when c_emp%notfound;
+
+dbms_output.put_line('ename=' || v_emp.ename || 'sal= ' || v_emp.sal || 'row count=' || c_emp%rowcount );
+
+end loop; 
+
+if c_emp%isopen then
+
+dbms_output.put_line('closing cursor');
+
+close c_emp;
+
+end if;
+
+end;
+
+/
+
+
+=================================================================
+
+declare
+
+cursor c_emp( p_deptno number) is select * from emp where deptno=p_deptno;
+
+begin
+
+dbms_output.put_line('emp from deptno 10');
+
+for v_emp in c_emp(10)
+
+loop
+
+dbms_output.put_line('ename=' || v_emp.ename || 'sal= ' || v_emp.sal || 'row count=' || c_emp%rowcount );
+
+end loop; 
+
+end;
+
+/
+
+
+==========================================================================
+
+IMPLICIT CURSOR---------
+
+begin 
+
+update emp set sal=sal+1000 where deptno=10;
+
+if SQL%found then
+
+dbms_output.put_line('record updated no of rows affected=' ||SQL%rowcount);
+
+else
+
+dbms_output.put_line('record not updated');
+
+end if;
+
+end;
+
+/
+
+
+================================================================================
+
+UPDATE----CURRENT OF-----------FOR UPDATING CURRENT RECORD
+
+declare
+
+cursor c_emp is select * from emp   for update;
+
+begin
+
+for v_emp in c_emp
+
+loop
+
+if v_emp.deptno=10 then
+
+update emp set sal=sal+sal*0.3 where current of c_emp;
+
+dbms_output.put_line('for deptno 10 ename = ' || v_emp.ename || 'sal=' || v_emp.sal || 'dept no=' || v_emp.deptno);
+
+elsif v_emp.deptno=20 then
+
+update emp set sal=sal+sal*0.2 where current of c_emp;
+
+dbms_output.put_line('for deptno 10 ename = '  || v_emp.ename|| 'sal=' || v_emp.sal|| 'dept no='|| v_emp.deptno);
+
+elsif v_emp.deptno=30 then
+
+update emp set sal=sal+sal*0.1 where current of c_emp;
+
+dbms_output.put_line('for deptno 10 ename = ' ||  v_emp.ename|| 'sal=' || v_emp.sal|| 'dept no='|| v_emp.deptno);
+
+end if;
+
+end loop;
+
+end;
+
+/
+
+
+
+
+========================================================================================
+RECORD LOCKING USING CURSOR
+
+declare 
+
+cursor c_emp is select * from emp for update;
+
+begin
+
+for v_emp in c_emp
+
+loop
+
+dbms_output.put_line('ename='||v_emp.ename||'sal='||v_emp.sal||'deptno='||v_emp.deptno);
+
+end loop;
+
+end;
+
+/
+
+
+
+=====================================================================================
+
+
+
+
+
+
+
+

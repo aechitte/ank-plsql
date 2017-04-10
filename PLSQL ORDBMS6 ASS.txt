@@ -1,0 +1,319 @@
+
+Practice 1
+
+•Create a user defined data type named “MARKS_TYPE” having the following subfields
+
+Column	              Data type and size
+Subject	                 VARCHAR 2 (25)
+midTermMarks	NUMBER (3)
+annualMarks	NUMBER(3)
+
+
+•Create an object table with name “MYMARKS” having a single column of type MARKS_TYPE.
+•Insert any 3 records in the table with relevant data
+•Fire an appropriate SELECT command to get midTermMarks and annualMarks for all records for the given subject
+
+ANS-
+
+ -----------------------------------------------------------------
+create or replace type MARKS_TYPE as object
+(subject varchar2(25),
+midTermMarks number(3),
+annualMarks number(3)
+);
+/
+
+---------------------------------------------------------
+
+create table mymarks (marks marks_type);
+--------------------------------------------------------------
+
+insert into mymarks values(marks_type('maths' , 98, 99));
+insert into mymarks values(marks_type('physics' , 75, 80));
+insert into mymarks values(marks_type('biology' , 82, 80));
+--------------------------------------------------------------
+
+select p.marks.midTermMarks from mymarks p where p.marks.subject like 'maths';
+
+MARKS.MIDTERMMARKS
+------------------
+                98
+-------------------------------------------------------------------
+
+
+SQL> select * from mymarks;
+
+MARKS(SUBJECT, MIDTERMMARKS, ANNUALMARKS)
+--------------------------------------------
+MARKS_TYPE('maths', 98, 99)
+MARKS_TYPE('physics', 75, 80)
+MARKS_TYPE('biology', 82, 80)
+
+
+=============================================================================================
+
+Practice 2
+
+•Create table “students” having the following design
+
+Column	              Data type and size	Constraint
+studentName	VARCHAR 2 (25)	
+rollNo	                NUMBER (3)	Primary Key
+Score	               MARKS_TYPE	
+
+•Insert any 3 relevant records in the table.
+•Fire an appropriate SELECT query to get the score of a student with the given rollNO
+•Fire an appropriate command to increase the annualMarks of the student with given rollNo by five marks
+
+ANS-
+
+----------------------------------------------
+create or replace type marks_type as object
+(subject varchar2(25),
+midtermmarks number(3),
+annualmarks number(3)
+);
+
+---------------------------------------------------
+
+create table students ( studentName varchar2(25) , rollNo number(3), score marks_type);
+
+-----------------------------------------------------------------
+
+insert into students values ('ank' , 1 , marks_type( 'maths' , 76 , 67));
+insert into students values ('jit' , 2 , marks_type( 'physics' , 78 , 65));
+insert into students values ('sarv' , 3 , marks_type( 'bio' , 75 , 66));
+ ------------------------------------------------------------------
+
+select p.score.midtermmarks , p.score.annualmarks from students p where rollNo=1;
+
+---------------------------------------------------------
+
+update students p set p.score.annualmarks=p.score.annualmarks+5 where rollNo=1;
+--------------------------------------
+select * from students;
+
+
+STUDENTNAME                   ROLLNO
+------------------------- ----------
+SCORE(SUBJECT, MIDTERMMARKS, ANNUALMARKS)
+-----------------------------------------------
+ank                                1
+MARKS_TYPE('maths', 76, 72)
+
+jit                                2
+MARKS_TYPE('physics', 78, 65)
+
+sarv                               3
+MARKS_TYPE('bio', 75, 66)
+
+========================================================================
+
+Practice 3
+
+•Create user defined data type named “ICECREAM_TYPE” with the following data members
+
+Column	                         Data type and size
+flovorNo	                          NUMBER(2)
+Fname	                        VARCHAR(10)
+Cost	                          NUMBER(3)
+Hastopping	    CHAR(1)   Can be Y or N
+
+•Create table named “menu” with the following design and insert five records into it.
+
+Column	                           Data type and size	Constraint
+MenuNo	                                   NUMBER(2)	Primary key
+mainCourse	           VARCHAR2(15)	Not Null
+Desert	                          ICECREAM_TYPE	
+Colddrink	                                   CHAR(6)	
+
+
+•Retrieve cost and name of an icecream from menu by specifying its flavor number.
+•Update cost and maincourse column  from menu by specifying its MenuNo.
+
+ANS-
+
+create or replace type icecream_type as object 
+( flovorNo number(2) , 
+Fname varchar2(10),
+cost number(3),
+hastopping char(1)
+);
+---------------------------
+create table menu (menuNo number(2) primary key, mainCourse varchar2(15) not null, desert icecream_type, coldDrink char(6));
+
+--------------------------------
+insert into menu values(1,'rice', icecream_type(11,'choco' , 80, 'y') , 'fanta');
+insert into menu values(2,'burger', icecream_type(12,'mango' , 88, 'y') , 'slice');
+insert into menu values(3,'fries', icecream_type(13,'almond' , 90, 'y') , 'pepsi');
+--------------------------------
+
+select p.desert.cost from menu p where p.desert.fname like 'mango';
+
+DESERT.COST
+-----------
+         88
+-----------------------------------
+update menu p set p.desert.cost=200 , mainCourse='noodles' where menuNo=1;
+
+------------------------------------
+SQL> select * from menu;
+
+    MENUNO MAINCOURSE
+---------- ---------------
+DESERT(FLOVORNO, FNAME, COST, HASTOPPING)
+------------------------------------------------------------------------------
+COLDDR
+------
+         1 noodles
+ICECREAM_TYPE(11, 'choco', 200, 'y')
+fanta
+
+         2 burger
+ICECREAM_TYPE(12, 'mango', 88, 'y')
+slice
+
+    MENUNO MAINCOURSE
+---------- ---------------
+DESERT(FLOVORNO, FNAME, COST, HASTOPPING)
+------------------------------------------------------------------------------
+COLDDR
+------
+
+         3 fries
+ICECREAM_TYPE(13, 'almond', 90, 'y')
+pepsi
+
+==================================================================================================================
+CURSOR......................................
+
+
+Practice 2
+
+A.Create an object type CUST_TAB with below attributes
+-	Cust_id
+-	Cust_Name
+-	Plan_Name
+B.Create suitable collection type CUST_DETAILS of CUST_TAB type.
+One customer may have many plans .
+
+C.Create a table Cust_Tab_details as follows :
+
+Columname                            	Constraint  	Datatype
+Srno                               	Primary Key            	  Number(10)
+Cust_Info                      	 	                CUST_DETAILS
+Cust_number	 	                                   Number(10)
+		                             
+D.Insert 2 rows in the above table 
+Atleast 2 CUST_TAB entries per srno.
+E.Write the select query to display Sr.no and Cust_info from cust_tab_detail table
+Note : Write SQL select command not the procedure.
+				
+ANS-
+
+create or replace type cust_tab as object (cust_id number, cust_name varchar2(20), plan_name varchar2(20));
+
+-------------------------
+create type cust_details as varray(5) of cust_tab;
+----------------------------
+create table cust_tab_details (srno number(10) primary key, cust_info cust_details,cust_number number(10));
+
+----------------------------
+
+insert into cust_tab_details values (101,cust_details(cust_tab(1,'aaa','plan1') , cust_tab(2,'bbb','plan2')), 111);
+insert into cust_tab_details values (102,cust_details(cust_tab(3,'ccc','plan3') , cust_tab(4,'ddd','plan4')), 222);
+insert into cust_tab_details values (103,cust_details(cust_tab(5,'eee','plan5') , cust_tab(6,'fff','plan6')), 333);
+
+----------------------
+select * from cust_tab_details ;
+      SRNO
+----------
+CUST_INFO(CUST_ID, CUST_NAME, PLAN_NAME)
+--------------------------------------------------------------------------------
+CUST_NUMBER
+-----------
+       101
+CUST_DETAILS(CUST_TAB(1, 'aaa', 'plan1'), CUST_TAB(2, 'bbb', 'plan2'))
+        111
+
+       102
+CUST_DETAILS(CUST_TAB(3, 'ccc', 'plan3'), CUST_TAB(4, 'ddd', 'plan4'))
+        222
+
+      SRNO
+----------
+CUST_INFO(CUST_ID, CUST_NAME, PLAN_NAME)
+--------------------------------------------------------------------------------
+CUST_NUMBER
+-----------
+
+       103
+CUST_DETAILS(CUST_TAB(5, 'eee', 'plan5'), CUST_TAB(6, 'fff', 'plan6'))
+        333
+-------------------------------------------------------
+
+declare
+var cust_details;
+cursor c1 is select * from cust_tab_details;
+
+begin
+for y in c1
+loop
+select cust_info into var from cust_tab_details where srno=y.srno;
+
+for x in 1..var.count
+loop
+dbms_output.put_line('cust id= ' ||var(x).cust_id || ' cust name= ' || var(x).cust_name ||' plan name= ' || var(x).plan_name);
+end loop;
+end loop;
+end;
+
+o/p:
+cust id= 1 cust name= aaa plan name= plan1
+cust id= 2 cust name= bbb plan name= plan2
+cust id= 3 cust name= ccc plan name= plan3
+cust id= 4 cust name= ddd plan name= plan4
+cust id= 5 cust name= eee plan name= plan5
+cust id= 6 cust name= fff plan name= plan6
+
+PL/SQL procedure successfully completed.
+====================================================================================================================
+
+Practice 4
+
+Create an object type VEHICLE_TYPE to record the vehicle details owned by an employee.  VEHICLE_TYPE  has the following design :
+
+
+Vehicle_No	VARCHAR2(12)
+Vehicle_Type	CHAR(1)  (T for two wheeler and F for four wheeler)
+Monthly_Expense	NUMBER(7)
+
+
+•Create a varray named VEHICLE_ARR of VEHICLE_TYPE that can store max of 3 vehicle details for each employee.
+
+•Create a table EMP_VARRAY with the following design :
+
+Emp_No	                    NUMBER (4)	               PRIMARY KEY
+Emp_Name	VARCHAR2 (30)	
+vehicleList	VEHICLE_ARR	
+
+•Add two relevant records in the table with only one vehicleList member for each emp_no.
+
+•Write a procedure named ADD_VEHICLE_DETAILS that accepts Emp_no and vehicle details and adds the vehicle details for the corresponding Emp_no in the EMP_VARRAY table. The procedure should handle all the probable errors by displaying the appropriate error messages on the screen.
+
+•Give a call to ADD_VEHICLE_DETAILS from an anonymous PL/SQL block
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

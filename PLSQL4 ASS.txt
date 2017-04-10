@@ -1,0 +1,136 @@
+
+Practice 1
+
+•	Create a procedure called USER_QUERY_EMP that accepts three parameters. Parameter p_myeno is of IN parameter mode which provides the employee_id value. The other two parameters p_myjob and p_mysal are of OUT mode. The procedure retrieves the salary and job_id of an employee with the provided employee_id and assigns those to the two OUT parameters respectively. The procedure should handle the error if the employee_id does not exist in the EMPLOYEES table by displaying an appropriate message. Use bind variables for the two OUT Parameters.
+•	Compile the code, invoke the procedure, and display the salary and job title for employee number 200. Do the same for employee number 120.
+
+ANS-
+
+1)
+
+create or replace procedure user_query_emp (p_myeno number, p_myjob out emp.job%type,p_mysal out number) as
+
+begin
+select sal into p_mysal from emp where empno=p_myeno;
+dbms_output.put_line('sal=' ||p_mysal);
+
+select job into p_myjob from emp where empno=p_myeno;
+dbms_output.put_line('job=' ||p_myjob);
+
+exception
+when no_data_found then
+dbms_output.put_line('no employee with the mentioned employee number was found in the database');
+
+end;
+/
+
+
+declare
+v_job emp.job%type;
+v_sal number;
+v_empid number:=&v_empid;
+
+begin
+user_query_emp(v_empid,v_job,v_sal);
+end;
+/
+
+o/p:
+Enter value for v_empid: 7788
+old   4: v_empid number:=&v_empid;
+new   4: v_empid number:=7788;
+sal=9636
+job=ANALYST
+
+
+2)
+
+create or replace procedure user_query_emp (p_myeno in emp.empno%type,p_myjob out emp.job%type,p_mysal out emp.sal%type) as
+
+invalid_empid exception;
+ct number;
+
+begin
+select count(*) into ct from emp where empno=p_myeno;
+
+if ct=0 then
+	raise invalid_empid;
+else
+	select sal,job into p_mysal,p_myjob from emp where empno=p_myeno;
+end if;
+
+exception
+when invalid_empid then
+dbms_output.put_line('emp id is invalid');
+end;
+/
+
+
+
+declare
+	v_job emp.job%type;
+	v_sal emp.sal%type;
+
+begin
+	user_query_emp(1234,v_job,v_sal);
+	if v_sal is not null then
+	dbms_output.put_line('job is' ||v_job);
+	dbms_output.put_line('salary is' ||v_sal);
+	end if;
+end;
+/
+o/p:emp id is invalid
+
+
+===========================================================
+
+Practice 2
+
+•Create a function named USER_ANNUAL_COMP that has three parameters p_eno, p_sal and p_comm for passing on the values of an employee_id, the current salary and commission of the employee respectively. The function calculates and returns the annual compensation of the employee by using the following formula.
+     annual_compensation =  (p_sal+p_comm)*12
+      If the salary or commission value is NULL then zero should be substituted for it. 
+•Give a call to USER_ANNUAL_COMP from a SELECT statement, against the EMPLOYEES table.
+
+
+ANS-
+
+create or replace function user_annual_compn (p_eno number , p_sal emp.sal%type, p_comm emp.comm%type) return number as
+
+p_ac number;
+begin
+
+p_ac:=(p_sal + nvl(p_comm,0))*12;
+return p_ac;
+end;
+/
+
+declare
+v_empid emp.empno%type:= &eid;
+v_annual number;
+begin
+select user_annual_compn(empno,sal,comm) into v_annual from emp where empno=v_empid;
+dbms_output.put_line('the annual compensation is ' ||v_annual);
+end;
+/
+
+o/p:
+Enter value for eid: 7788
+old   2: v_empid emp.empno%type:= &eid;
+new   2: v_empid emp.empno%type:= 7788;
+the annual compensation is 115632
+
+=====================================================================================================
+
+Practice 3
+
+•Create a function named USER_VALID_DEPTNO that has a single parameter p_dno to accept a department number and returns a BOOLEAN value. The function returns TRUE if the department number exists in the DEPARTMENTS table else it returns FALSE.
+•Create a procedure named SHOW_STRENGTH that accepts department number in a single parameter p_deptno from user. The procedure gives a call to USER_VALID_DEPTNO. If the function returns TRUE then the procedure finds out how many employees are there in the department from the EMPLOYEES table and displays the same on the screen. If the function returns FALSE then the procedure displays an appropriate error message.
+•Give call to SHOW_STRENGTH by passing on department number 10. Do the same for department number 76
+
+
+ANS-
+
+
+
+
+

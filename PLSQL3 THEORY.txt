@@ -1,0 +1,214 @@
+EXCEPTION CONCEPT
+
+declare
+
+v_sal emp.sal%type;
+
+var number(3);
+
+z number;
+
+begin
+
+var:=10000;
+
+z:=10/0;
+
+select sal into v_sal from emp where empno=1;
+
+dbms_output.put_line('sal= ' || v_sal);
+
+exception
+when no_data_found then
+dbms_output.put_line('empno is not available');
+
+when zero_divide then
+dbms_output.put_line('dont try to divide by zero');
+
+when others then
+dbms_output.put_line('exception raised');
+
+end;
+/
+
+
+=====================================================================================================================
+
+MULTIPLE EXCEPTIONS USING 'OR'
+
+
+declare
+
+v_sal emp.sal%type;
+
+var number(3);
+
+z number;
+
+begin
+
+var:=10000;
+
+z:=10/0;
+
+select sal into v_sal from emp where empno=1;
+
+dbms_output.put_line('sal= ' || v_sal);
+
+exception
+when  value_error or zero_divide or no_data_found then
+dbms_output.put_line('employee not available');
+
+end;
+/
+
+===================================================================================================================
+
+HOW TO CAUGHT EXCEPTION IN DECLARATION BLOCK.........BCZ WE CAN NOT CAUGHT EXCEPTION IN DECLARATION PART......IT HAS FOLLOWING SOLUTION
+
+
+begin
+
+	declare
+ 
+                   v_sal emp.sal%type;
+
+                   var number(3):=100000;
+
+ 	z number;
+
+	begin
+
+	select sal into z from emp;
+
+	z:=10/0;
+
+	select sal into v_sal from emp where empno=1;
+
+	dbms_output.put_line('sal= ' || v_sal);
+	end;
+
+exception
+when no_data_found or value_error then
+dbms_output.put_line('empno is not available or value_error');
+
+when zero_divide then
+dbms_output.put_line('dont try to divide by zero');
+
+when too_many_rows then
+dbms_output.put_line('multiple rows fetched');
+
+when others then
+dbms_output.put_line('exception raised');
+
+end;
+/
+
+=================================================================================================================
+
+declare
+var number(3);
+z number;
+begin
+
+begin
+var:=10000;
+dbms_output.put_line('var= ' || var);
+exception
+when no_data_found or value_error then
+dbms_output.put_line('empno is not available or value error');
+end;
+
+z:=10/0;
+dbms_output.put_line('after z');
+exception
+when zero_divide then
+dbms_output.put_line('dont try to divide by zero');
+
+when others then
+dbms_output.put_line('exception raised');
+
+end;
+/
+
+==========================================================================================================
+
+declare
+childfound exception;
+pragma exception_init(childfound,-02292);
+begin
+delete dept where deptno=10;
+dbms_output.put_line('dept 10 is deleted');
+
+exception
+when childfound then
+dbms_output.put_line('emp existing in dept 10');
+
+end;
+/
+
+
+=============================================================================================================
+
+declare
+marks number;
+wrong_marks exception;
+begin
+
+marks :=&marks;
+
+if marks >100 then
+raise wrong_marks;
+end if;
+dbms_output.put_line('ur marks= ' ||marks);
+
+exception
+when wrong_marks then
+dbms_output.put_line('please enter valid marks which is <=100');
+
+end;
+/
+
+
+================================================================================================================
+
+
+declare
+
+empid number := &empid;
+amount number := &amount;
+v_sal number;
+wrong_sal exception;
+
+begin
+select sal into v_sal from emp where empno=empid;
+
+if v_sal < amount then
+raise wrong_sal;
+end if;
+dbms_output.put_line('salary acceptable');
+
+
+exception
+when wrong_sal then
+dbms_output.put_line('salary is greater than elligible');
+
+end;
+/
+
+
+=================================================================================================================
+
+
+declare
+var number(3);
+begin
+var:=10000;
+dbms_output.put_line('var=' || var);
+exception
+when value_error then
+dbms_output.put_line('erroe code=' || SQLCODE || 'message = '|| SQLERRM);
+end;
+/
+
+================================================================================================================
